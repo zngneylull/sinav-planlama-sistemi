@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sınav Planlama Sistemi</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="layout" style="display:flex; min-height:100vh; width:100%;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" style="flex-shrink:0;">
+      <div class="brand">
+        <div class="brand-logo">SP</div>
+        <div>
+          <h2>Sınav Planlama</h2>
+          <p>YZM 2126</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-btn active" onclick="showPage('dashboard')">◇ Dashboard</button>
+        <button class="nav-btn" onclick="showPage('sinavlar')">◇ Sınavlar</button>
+        <button class="nav-btn" onclick="showPage('dersler')">◇ Dersler</button>
+        <button class="nav-btn" onclick="showPage('derslikler')">◇ Derslikler</button>
+        <button class="nav-btn" onclick="showPage('personeller')">◇ Personel</button>
+        <button class="nav-btn" onclick="showPage('salon-atama')">◇ Salon Atama</button>
+        <button class="nav-btn" onclick="showPage('gozetmen-atama')">◇ Gözetmen Atama</button>
+        <button class="nav-btn" onclick="showPage('raporlar')">◇ Raporlar</button>
+        <button class="nav-btn" onclick="showPage('loglar')">◇ Loglar</button>
+      </nav>
+
+      <div class="status">
+        <span id="statusDot" class="status-dot offline"></span>
+        <span id="statusText">Bağlanıyor...</span>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main" style="flex:1; min-width:0;">
+
+      <!-- DASHBOARD -->
+      <section id="page-dashboard" class="page active">
+        <div class="page-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Sistem durumu ve özet bilgiler</p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <p>Sınavlar</p>
+            <h2 id="count-sinavlar">—</h2>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <p>Dersler</p>
+            <h2 id="count-dersler">—</h2>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🏛️</div>
+            <p>Derslikler</p>
+            <h2 id="count-derslikler">—</h2>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">👤</div>
+            <p>Personel</p>
+            <h2 id="count-personel">—</h2>
+          </div>
+        </div>
+
+        <h3 class="section-title">Sistem Modu</h3>
+        <div id="app-mode-box" class="form-box">Yükleniyor...</div>
+      </section>
+
+      <!-- SINAVLAR -->
+      <section id="page-sinavlar" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Sınavlar</h1>
+            <p>Sınav programı ve sınav oluşturma işlemleri</p>
+          </div>
+          <button class="btn-primary" onclick="toggleForm('sinav-form')">+ Yeni Sınav</button>
+        </div>
+
+        <div id="sinav-form" class="form-box hidden">
+          <h3>Yeni Sınav Oluştur</h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Ders</label>
+              <select id="sinav-ders-id">
+                <option value="">Ders seçiniz</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Tarih</label>
+              <input type="date" id="sinav-tarih" />
+            </div>
+
+            <div class="form-group">
+              <label>Oturum</label>
+              <select id="sinav-oturum-id">
+                <option value="">Oturum seçiniz</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="sinavEkle()">Kaydet</button>
+        </div>
+<div class="form-box" style="margin-top:24px; border-color: var(--info);">
+  <h3 style="color:var(--info)">Sınav Tarih / Oturum Güncelle</h3>
+  <p class="info-note">
+    Yönetici sınavın tarih veya oturum bilgisini değiştirdiğinde eski ve yeni bilgiler log tablosuna kaydedilir.
+  </p>
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Sınav ID</label>
+      <input type="number" id="guncelle-sinav-id" placeholder="Örn: 12" />
+    </div>
+
+    <div class="form-group">
+      <label>Yeni Tarih</label>
+      <input type="date" id="guncelle-tarih" />
+    </div>
+
+    <div class="form-group">
+      <label>Yeni Oturum</label>
+      <select id="guncelle-oturum-id">
+        <option value="">Oturum seçiniz</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="sinavGuncelle()">Sınavı Güncelle</button>
+</div>
+        <div class="table-box" id="tablo-sinavlar"></div>
+        <div id="sinav-atama-yonetim"></div>
+      </section>
+
+      <!-- DERSLER -->
+      <section id="page-dersler" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Dersler</h1>
+            <p>Bölümlere ait ders kayıtları</p>
+          </div>
+          <button class="btn-primary" onclick="toggleForm('ders-form')">+ Yeni Ders</button>
+        </div>
+
+        <div id="ders-form" class="form-box hidden">
+          <h3>Yeni Ders Ekle</h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Ders Kodu</label>
+              <input type="text" id="ders-kodu" placeholder="Örn: YZM2134" />
+            </div>
+
+            <div class="form-group">
+              <label>Ders Adı</label>
+              <input type="text" id="ders-adi" placeholder="Örn: Veri Yapıları" />
+            </div>
+
+            <div class="form-group">
+              <label>Ders Türü</label>
+              <select id="ders-turu">
+                <option value="">Ders türü seçiniz</option>
+                <option value="Zorunlu">Zorunlu</option>
+                <option value="Seçmeli">Seçmeli</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Öğrenci Sayısı</label>
+              <input type="number" id="ders-ogrenci" placeholder="Örn: 60" />
+            </div>
+
+            <div class="form-group">
+              <label>Yarıyıl</label>
+              <input type="number" id="ders-yariyil" placeholder="Örn: 4" />
+            </div>
+
+            <div class="form-group">
+              <label>Bölüm</label>
+              <select id="ders-bolum-id">
+                <option value="">Bölüm seçiniz</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="dersEkle()">Kaydet</button>
+        </div>
+
+        <div class="table-box" id="tablo-dersler"></div>
+      </section>
+
+      <!-- DERSLİKLER -->
+      <section id="page-derslikler" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Derslikler</h1>
+            <p>Sınav salonları ve kapasiteleri</p>
+          </div>
+        </div>
+
+        <div class="table-box" id="tablo-derslikler"></div>
+      </section>
+
+      <!-- PERSONEL -->
+      <section id="page-personeller" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Personel</h1>
+            <p>Gözetmen/personel kayıtları</p>
+          </div>
+          <button class="btn-primary" onclick="toggleForm('personel-form')">+ Yeni Personel</button>
+        </div>
+
+        <div class="form-box" style="margin-top:24px; border-color: var(--accent);">
+          <h3 style="color: var(--accent);">Personel Müsaitlik Durumu</h3>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">
+            Öğretim elemanının belirli tarih ve oturumda sınav görevi alıp alamayacağını belirler.
+          </p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Personel ID</label>
+              <input type="number" id="izin-personel-id" placeholder="Örn: 2" />
+            </div>
+
+            <div class="form-group">
+              <label>Tarih</label>
+              <input type="date" id="izin-tarih" />
+            </div>
+
+            <div class="form-group">
+              <label>Oturum</label>
+              <select id="izin-oturum-id">
+                <option value="">Oturum seçiniz</option>
+                <option value="1">1 - Sabah-1</option>
+                <option value="2">2 - Sabah-2</option>
+                <option value="3">3 - Öğle</option>
+                <option value="4">4 - Öğleden Sonra-1</option>
+                <option value="5">5 - Öğleden Sonra-2</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Durum</label>
+              <select id="izin-uygun">
+                <option value="">Durum seçiniz</option>
+                <option value="1">Müsait</option>
+                <option value="0">Müsait Değil</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="personelIzinEkle()">Müsaitlik Kaydet</button>
+        </div>
+
+        <div id="personel-form" class="form-box hidden">
+          <h3>Yeni Personel Ekle</h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Ünvan</label>
+              <input type="text" id="personel-unvan" placeholder="Örn: Prof. Dr." />
+            </div>
+
+            <div class="form-group">
+              <label>Ad</label>
+              <input type="text" id="personel-ad" placeholder="Ad" />
+            </div>
+
+            <div class="form-group">
+              <label>Soyad</label>
+              <input type="text" id="personel-soyad" placeholder="Soyad" />
+            </div>
+
+            <div class="form-group">
+              <label>Bölüm</label>
+              <select id="personel-bolum">
+                <option value="">Bölüm seçiniz</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="personelEkle()">Kaydet</button>
+        </div>
+
+        <div class="table-box" id="tablo-personeller"></div>
+      </section>
+
+      <!-- SALON ATAMA -->
+      <section id="page-salon-atama" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Salon Atama</h1>
+            <p>Öğrenci sayısına göre uygun salon önerisi</p>
+          </div>
+        </div>
+
+        <div class="form-box">
+          <h3>Salon Önerisi Al</h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Öğrenci Sayısı</label>
+              <input type="number" id="salon-ogrenci" placeholder="Örn: 130" />
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="salonOneri()">Öneri Al</button>
+        </div>
+
+        <div id="salon-oneri-sonuc"></div>
+
+        <div class="form-box" style="margin-top:24px; border-color: var(--accent);">
+          <h3 style="color:var(--accent)">Bulunan Salonları Sınava Ata</h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Sınav ID</label>
+              <input type="number" id="ata-sinav-id" placeholder="Örn: 1" oninput="sinavBilgisiGoster()" />
+              <small id="ata-sinav-bilgi" style="display:block;margin-top:6px;color:var(--text-muted);font-size:11px">
+                Sınav ID girince sınav adı burada görünecek.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label>Seçilen Derslikler</label>
+              <select id="ata-derslik-idler" multiple size="8">
+                <option value="">Derslik seçiniz</option>
+              </select>
+              <small style="display:block;margin-top:6px;color:var(--text-muted);font-size:11px">
+                Birden fazla derslik seçmek için Ctrl tuşuna basılı tutarak seçim yap.
+              </small>
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="salonAta()">Salonu Ata ve Kaydet</button>
+        </div>
+      </section>
+
+      <!-- GÖZETMEN ATAMA -->
+      <section id="page-gozetmen-atama" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Gözetmen Atama</h1>
+            <p>Bölüme göre gözetmen önerisi</p>
+          </div>
+        </div>
+
+        <div class="form-box" style="border-color: var(--accent);">
+          <h3 style="color: var(--accent);">Manuel Gözetmen Ata</h3>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">
+            Seçilen sınav salonuna manuel gözetmen atar. Aynı tarih ve oturumda çakışma varsa sistem izin vermez.
+          </p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Sınav ID</label>
+              <input
+                type="number"
+                id="manual-sinav-id"
+                placeholder="Örn: 12"
+                oninput="manuelSinavSalonlariniYukle()"
+              />
+              <small id="manual-sinav-bilgi" style="display:block;margin-top:6px;color:var(--text-muted);font-size:11px">
+                Sınav ID girince o sınava ait salonlar ve uygun personeller listelenecek.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label>Sınav Salonu</label>
+              <select id="manual-sinav-salon-id">
+                <option value="">Önce sınav ID giriniz</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Personel</label>
+              <select id="manual-personel-id">
+                <option value="">Önce sınav ID giriniz</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="manuelGozetmenAta()">Manuel Gözetmen Ata</button>
+        </div>
+
+        <div class="form-box" style="margin-top:24px">
+          <h3>Gözetmen Önerisi Al</h3>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Bölüm</label>
+              <select id="gozetmen-bolum-id">
+                <option value="">Bölüm seçiniz</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="gozetmenOneri()">Öneri Al</button>
+        </div>
+
+        <div id="gozetmen-oneri-sonuc"></div>
+
+        <div class="form-box" style="margin-top:24px; border-color: var(--info);">
+  <h3 style="color:var(--info)">Sınava Otomatik Gözetmen Ata</h3>
+
+  <p class="info-note">
+    Sistem önce sınavı yapan bölümden müsait gözetmen arar. 
+    Bölümde yeterli gözetmen yoksa otomatik olarak 
+    <strong>Mühendislik Fakültesi Ortak Havuzu</strong>'ndaki müsait hocaları listeye dahil eder.
+  </p>
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Sınav ID</label>
+      <input type="number" id="goz-ata-sinav-id" placeholder="Örn: 12" />
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="gozetmenAta()">Otomatik Gözetmen Ata</button>
+</div>
+      </section>
+
+      <!-- RAPORLAR -->
+      <section id="page-raporlar" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Raporlar</h1>
+            <p>SQL view tabanlı raporlar</p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-secondary" onclick="rapor('sinav-programi')">Sınav Programı</button>
+          <button class="btn-secondary" onclick="rapor('gozetmen-gorev-dagilimi')">Gözetmen Görev Dağılımı</button>
+          <button class="btn-secondary" onclick="rapor('derslik-kullanim')">Derslik Kullanım</button>
+          <button class="btn-secondary" onclick="rapor('bolum-sinav-yogunlugu')">Bölüm Sınav Yoğunluğu</button>
+        </div>
+
+        <div id="rapor-sonuc"></div>
+      </section>
+
+      <!-- LOGLAR -->
+      <section id="page-loglar" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Loglar</h1>
+            <p>Trigger ve işlem kayıtları</p>
+          </div>
+        </div>
+
+        <div class="table-box" id="tablo-loglar"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
